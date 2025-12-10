@@ -1,38 +1,31 @@
-# app.py
-
 import streamlit as st
 import pandas as pd
-import numpy as np
 import joblib
 
 st.set_page_config(page_title="Salary Prediction App", layout="centered")
 
 st.title("💼 Employee Salary Predictor")
-st.write("Predict employee salary based on experience and age using a machine learning model.")
+st.write("Enter the details below to estimate the salary.")
 
-# --- Load model and scaler ---
-@st.cache_resource
 @st.cache_resource
 def load_model():
-    model = joblib.load("models/salary_model.joblib")   # changed here
+    model = joblib.load("models/salary_model.joblib")
     scaler = joblib.load("models/scaler.joblib")
     return model, scaler
 
-
 model, scaler = load_model()
 
-# --- User Input ---
-st.sidebar.header("Input Features")
+st.sidebar.header("Input")
 
-experience = st.sidebar.number_input("Years of Experience", min_value=0.0, max_value=50.0, step=0.1, value=2.0)
-age = st.sidebar.number_input("Age", min_value=18, max_value=100, step=1, value=25)
+experience = st.sidebar.number_input("Years of Experience", 0.0, 50.0, 2.0, step=0.1)
+age = st.sidebar.number_input("Age", 18, 100, 25)
 
 if st.sidebar.button("Predict Salary"):
-    X_new = pd.DataFrame([[experience, age]], columns=['YearsExperience', 'Age'])
-    X_scaled = scaler.transform(X_new)
-    prediction = model.predict(X_scaled)[0]
+    df = pd.DataFrame([[experience, age]], columns=["YearsExperience", "Age"])
+    scaled = scaler.transform(df)
+    result = model.predict(scaled)[0]
     st.subheader("Predicted Salary")
-    st.success(f"💰 Estimated Salary: ₹ {prediction:,.2f}")
+    st.success(f"Estimated Salary: ₹ {result:,.2f}")
 
 st.write("---")
-st.write("Model trained using Linear Regression, Random Forest, and Gradient Boosting (Voting Regressor).")
+st.caption("Model uses a Voting Regressor combining Linear Regression, Random Forest, and Gradient Boosting.")
